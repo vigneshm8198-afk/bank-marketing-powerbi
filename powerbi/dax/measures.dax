@@ -1,0 +1,46 @@
+-- Create a table for measures: Home > Enter data > name it "_Measures" > Load. Then add each measure below
+-- with Modeling > New measure (select the _Measures table first). Set the format in the comment.
+-- Add the What-if parameter first (dax/whatif_cost_parameter.dax) because cost measures use it.
+-- Definitions:
+--   Subscription = the customer said yes to the term deposit (subscribed = 1).
+--   Conversion rate = subscriptions / customers contacted.
+--   Contacts = number of calls made to a customer during this campaign (column "campaign").
+
+------------------------------------------------------------ VOLUME AND CONVERSION
+Customers Contacted = COUNTROWS ( fact_campaign )                         -- whole number
+Subscriptions = SUM ( fact_campaign[subscribed] )                         -- whole number
+Conversion Rate = DIVIDE ( [Subscriptions], [Customers Contacted] )       -- percentage, 1 decimal
+Overall Conversion Rate = CALCULATE ( [Conversion Rate], REMOVEFILTERS () )  -- percentage, 1 decimal (benchmark, ignores all filters)
+Lift = DIVIDE ( [Conversion Rate], [Overall Conversion Rate] )            -- decimal, 2 places, e.g. 1.35 (35% better than average)
+Conversion vs Overall (pts) = ( [Conversion Rate] - [Overall Conversion Rate] ) * 100  -- decimal, 1 place
+
+-- Hides tiny segments where a handful of customers would give a misleading rate
+Conversion Rate (min 100 customers) =                                     -- percentage, 1 decimal
+    IF ( [Customers Contacted] >= 100, [Conversion Rate] )
+
+Share of Subscriptions =                                                  -- percentage, 1 decimal
+    DIVIDE ( [Subscriptions], CALCULATE ( [Subscriptions], ALLSELECTED () ) )
+
+------------------------------------------------------------ CONTACT EFFORT AND COST
+Total Contacts = SUM ( fact_campaign[campaign] )                          -- whole number
+Avg Contacts per Customer = DIVIDE ( [Total Contacts], [Customers Contacted] )   -- decimal, 2 places
+Contacts per Subscription = DIVIDE ( [Total Contacts], [Subscriptions] )  -- decimal, 1 place
+Total Campaign Cost = [Total Contacts] * [Cost per Contact Value]         -- currency, no decimals (assumption-driven)
+Cost per Subscription = DIVIDE ( [Total Campaign Cost], [Subscriptions] ) -- currency, 1 decimal (assumption-driven)
+
+------------------------------------------------------------ CALL QUALITY
+Avg Call Duration (min) = AVERAGE ( fact_campaign[duration_sec] ) / 60    -- decimal, 1 place
+Avg Duration Subscribed (min) =                                           -- decimal, 1 place
+    CALCULATE ( AVERAGE ( fact_campaign[duration_sec] ), fact_campaign[subscribed] = 1 ) / 60
+Avg Duration Not Subscribed (min) =                                       -- decimal, 1 place
+    CALCULATE ( AVERAGE ( fact_campaign[duration_sec] ), fact_campaign[subscribed] = 0 ) / 60
+
+------------------------------------------------------------ CUSTOMER PROFILE
+Avg Age = AVERAGE ( fact_campaign[age] )                                  -- decimal, 1 place
+
+------------------------------------------------------------ RANKING
+Job Rank by Conversion =
+    IF (
+        NOT ISBLANK ( [Conversion Rate (min 100 customers)] ),
+        RANKX ( ALL ( dim_job[job] ), [Conversion Rate (min 100 customers)], , DESC, DENSE )
+    )

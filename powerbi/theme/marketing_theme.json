@@ -1,0 +1,23 @@
+{
+  "name": "Bank Marketing",
+  "dataColors": ["#0B5C5C", "#2A9D8F", "#8AD0C8", "#E76F51", "#F4A261", "#7F7F7F", "#264653", "#E9C46A"],
+  "background": "#FFFFFF",
+  "foreground": "#262626",
+  "tableAccent": "#0B5C5C",
+  "good": "#2A9D8F",
+  "neutral": "#E9C46A",
+  "bad": "#C0392B",
+  "textClasses": {
+    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 12, "color": "#0B5C5C" },
+    "label": { "fontFace": "Segoe UI", "fontSize": 10, "color": "#404040" },
+    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 24, "color": "#0B5C5C" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "title": [{ "show": true, "fontColor": { "solid": { "color": "#0B5C5C" } }, "fontSize": 12 }],
+        "border": [{ "show": true, "color": { "solid": { "color": "#D9D9D9" } } }]
+      }
+    }
+  }
+}

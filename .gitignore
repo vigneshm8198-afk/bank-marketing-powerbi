@@ -1,0 +1,10 @@
+# Raw and generated data (recreated by src/prepare_data.py)
+data/*.csv
+data/powerbi/campaign_clean.csv
+# Kaggle credentials - NEVER commit
+kaggle.json
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+.pbi/
